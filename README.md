@@ -11,12 +11,16 @@ city, state, and zip code and uses that information
 for its forecast query.
 
 BUGS:
-Currently, only US and Canada zip/postal codes are
++Currently, only US and Canada zip/postal codes are
 accepted.  This is based on wttr.io capability of
 searching based on postal code.  The result of
 using a zip or postal code from other than US or
 Canada is "ERROR" and exit.
-There is also an issue performing this while using
++There is also an issue performing this while using
 a VPN connection or SSH Tunnels or Socks Proxy. The
 public IP address of the VPN server will be used to
 base location.
++Lastly that I have found is when using mobile net
+connections/tethering, you will require a location.
+The IP address does not equate to a location, so
+you will receive a forecast for St. Petersburg, RU.
