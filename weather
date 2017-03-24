@@ -8,19 +8,34 @@ echo Weather location options:
 echo "  City, State"
 echo "  City, ST"
 echo "  Zip/Postal Code"
+echo "  IP address"
 echo ""
 echo "NOTES:"
-echo "Currently only US Zip Codes and Canadian Postal Codes are recognized."
+echo "Though any IP address is usable and searchable, as far as postal codes,"
+echo "currently only US Zip Codes and Canadian Postal Codes are recognized."
 echo "In the future it may be possible to add other country postal codes."
 }
 
 get_weather() {
-curl wttr.in/${LOCATION// /_}
+curl -s wttr.in/${LOCATION// /_} | head -39
+}
+
+get_ipinfo(){
+IP="$(curl -s ipinfo.io/ip)"
+}
+
+get_ip_input(){
+IP="$@"
 }
 
 get_zip() {
-IP="$(curl -s ipinfo.io/ip)"
+get_ipinfo
 ZIP=$(curl -s ipinfo.io/$IP | awk -F ":" '/postal/ { print $2 }' | sed -e 's/^\ "//' -e 's/"$//')
+}
+
+get_ip_zip(){
+get_ip_input
+get_zip
 }
 
 get_city() {
@@ -35,6 +50,7 @@ get_location() {
 LOCATION="$CITY, $STATE"
 }
 
+
 if [ "$1" == "-h" ]; then
         help
         exit
@@ -43,9 +59,26 @@ elif [ $# -eq 0 ]; then
         get_state
         get_location
         echo "No city provided. Defaulting to $CITY, $STATE"
-        echo $LOCATION
         get_weather
 else
+	# IP address input validation
         LOCATION=$@
-        get_weather
+	if [[ "$LOCATION" =~ ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$ ]]; then
+		IP=$@
+		curl -s ipinfo.io/$IP > /dev/null
+		get_city
+		get_state
+		get_location
+		echo "IP provided. Finding city, state based on IP address."
+		get_weather
+	elif
+		# City name input validation
+		[[ "$LOCATION" =~ ^([a-zA-Z].*)$ ]]; then
+			get_weather
+	else
+		# Non-standard input, something that this script does not understand
+		echo "Sorry, I do not understand your input."
+		echo "Please try either an [IP address], [city, state], [city, st], or a [city, country]."
+		help
+	fi
 fi
