@@ -17,7 +17,7 @@ echo "In the future it may be possible to add other country postal codes."
 }
 
 get_weather() {
-curl -s wttr.in/${LOCATION// /_} | head -39
+curl -s wttr.in/${LOCATION// /_} | head -n -2
 }
 
 get_ipinfo(){
@@ -60,25 +60,27 @@ elif [ $# -eq 0 ]; then
         get_location
         echo "No city provided. Defaulting to $CITY, $STATE"
         get_weather
+elif [[ "$1" =~ ^([0-9]){5}$ ]]; then
+        curl -s wttr.in/$1 2>/dev/null | head -n -2
 else
-	# IP address input validation
+        # IP address input validation
         LOCATION=$@
-	if [[ "$LOCATION" =~ ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$ ]]; then
-		IP=$@
-		curl -s ipinfo.io/$IP > /dev/null
-		get_city
-		get_state
-		get_location
-		echo "IP provided. Finding city, state based on IP address."
-		get_weather
-	elif
-		# City name input validation
-		[[ "$LOCATION" =~ ^([a-zA-Z].*)$ ]]; then
-			get_weather
-	else
-		# Non-standard input, something that this script does not understand
-		echo "Sorry, I do not understand your input."
-		echo "Please try either an [IP address], [city, state], [city, st], or a [city, country]."
-		help
-	fi
+        if [[ "$LOCATION" =~ ^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$ ]]; then
+                IP=$@
+                curl -s ipinfo.io/$IP > /dev/null
+                get_city
+                get_state
+                get_location
+                echo "IP provided. Finding city, state based on IP address."
+                get_weather
+        elif
+                # City name input validation
+                [[ "$LOCATION" =~ ^([a-zA-Z].*)$ ]]; then
+                        get_weather
+        else
+                # Non-standard input, something that this script does not understand
+                echo "Sorry, I do not understand your input."
+                echo "Please try either an [IP address], [city, state], [city, st], or a [city, country]."
+                help
+        fi
 fi
