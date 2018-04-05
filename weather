@@ -1,5 +1,12 @@
 #!/bin/bash
 
+for dep in curl; do
+        if [ ! -x $(which $dep) ]; then
+                echo "Missing $dep"
+                exit
+        fi
+done
+
 help() {
 echo "Weather, version 1.0"
 echo "Usage:  weather [location]"
